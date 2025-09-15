@@ -1,0 +1,1298 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Books Inventory System
+  description: The Books Inventory System is a backend project designed to manage a catalog of books, user information, and book transactions. This system provides functionalities for user authentication, user management, book management, transaction tracking, and photo management.
+  contact:
+    name: Anik
+    email: anik2002bro@gmail.com
+
+servers:
+  - url: "http://localhost:4000/api/v1"
+    description: Dev Version-1
+  - url: "http://localhost:4000/api/v2"
+    description: Dev Version-2
+tags:
+  - name: Auth
+    description: Authentication Endpoints (public)
+  - name: Book
+    description: Book Endpoints (public + private)
+  - name: User
+    description: User Endpoints (Admin or user-specific)
+  - name: Transaction 
+    description: Transaction Endpoints  (Admin or user-specific)
+
+paths:
+  "/auth/register":
+    post:
+      description: Create a new account
+      tags:
+        - Auth
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/UserRequestBody"
+                
+      
+      responses:
+        "201":
+          description: Registration Successful.
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 201
+                  message:
+                    type: string
+                    example: Account created successfully
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/auth/register"
+                      signin:
+                        type: string
+                        example: "/auth/login"
+
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+
+
+  "/auth/login":
+    post:
+      description: Login to your account
+      tags:
+        - Auth
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: anik@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: hello#q859*&
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                    example: Login successful
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/auth/login"
+
+
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+
+  
+  
+  
+  
+  
+  "/books":
+    get:
+      tags:
+        - Book
+      description: Retrive all books
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/sortTypeParam"
+        - $ref: "#/components/parameters/sortByParam"
+        - $ref: "#/components/parameters/searchParam"
+      responses:
+        "200":
+          description: Successfully retrieved
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code: 
+                    type: integer
+                    format: int32 
+                    example: 200 
+                  message: 
+                    type: string 
+                    example: Books retrieved successfully
+                  data:
+                    type: array 
+                    items:
+                      $ref: "#/components/schemas/Book"
+                      
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/books?page=2&limit=10"
+                      next:
+                        type: string
+                        format: url
+                        example: "/books?page=3&limit=10"
+                      prev:
+                        type: string
+                        format: url
+                        example: "/books?page=1&limit=10"
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500" 
+     
+    
+
+    post: 
+      security:
+        - bearerAuth: []
+      tags:
+        - Book
+      description: Create a new Book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: title
+                cover:
+                  type: string
+                  format: url
+                  example: "https://s3.amazon.com/cover.jpg"
+                author: 
+                  type: string 
+                  example: Alexa
+                isbn:
+                  type: string 
+                  example: 978-0451450524
+                publicationDate: 
+                  type: string 
+                  example: 10 September 2023
+                category:
+                  type: string 
+                  example: "Fiction"
+                description: 
+                  type: string 
+                  example: "This is a sample book description."
+                price: 
+                  type: number
+                  example: 19.99
+                quantity:
+                  type: integer
+                  example: 10
+                condition: 
+                  type: string 
+                  example: "New" 
+                availability:
+                  type: boolean 
+                  example: true
+              required: [ title, cover, author, isbn, publicationDate, category, description, price, quantity, condition ]
+
+
+
+      responses:
+        "201":
+          description: Successfully created
+          content:
+            "application/json":
+              schema: 
+                type: object 
+                properties:
+                  code: 
+                    type: integer 
+                    format: int32 
+                    example: 201
+                  message:
+                    type: string
+                    example: Book created successfully
+                  data:
+                    $ref: "#/components/schemas/Book"
+                  links:
+                   type: object
+                   properties:
+                    self:
+                      type: string
+                      format: url
+                      example: "/books/1"
+        
+        "400":
+           $ref: "#/components/responses/400"
+        "401":
+           $ref: "#/components/responses/401"
+        "403":
+           $ref: "#/components/responses/403"
+        "500":
+           $ref: "#/components/responses/500"
+
+
+  "/books/{id}": 
+    get: 
+      tags:
+        - Book
+      description: Retrive a Single Book
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "200":
+          description: Successfully retrieved
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: integer 
+                    format: int32 
+                    example: 200
+                  message: 
+                    type: string 
+                    example: Book retrieved successfully
+                  data:
+                    $ref: "#/components/schemas/Book"
+                  links:
+                   type: object
+                   properties:
+                    self:
+                      type: string
+                      format: url
+                      example: "/books/1"
+      
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+         
+
+
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Book
+      description: Update a Book
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: title
+                cover:
+                  type: string
+                  format: url
+                  example: "https://s3.amazon.com/cover.jpg"
+                author: 
+                  type: string 
+                  example: Alexa
+                isbn:
+                  type: string 
+                  example: 978-0451450524
+                publicationDate: 
+                  type: string 
+                  example: 10 September 2023
+                category:
+                  type: string 
+                  example: "Fiction"
+                description: 
+                  type: string 
+                  example: "This is a sample book description."
+                price: 
+                  type: number
+                  example: 19.99
+                quantity:
+                  type: integer
+                  example: 10
+                condition: 
+                  type: string 
+                  example: "New" 
+                availability:
+                  type: boolean 
+                  example: true
+                
+
+      responses:
+        "200":
+          description: Successfully Updated
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: integer 
+                    format: int32 
+                    example: 200
+                  message: 
+                    type: string 
+                    example: Book updated successfully
+                  data:
+                    $ref: "#/components/schemas/Book"
+                  links:
+                   type: object
+                   properties:
+                    self:
+                      type: string
+                      format: url
+                      example: "/books/1"
+      
+        "400":
+           $ref: "#/components/responses/400"
+        "401":
+           $ref: "#/components/responses/401"
+        "403":
+           $ref: "#/components/responses/403"
+        "404":
+           $ref: "#/components/responses/404"
+        "500":
+           $ref: "#/components/responses/500"    
+
+              
+
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Book
+      description: Delete a Book by Id
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "204":
+          description: Book Deleted Successfully
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"         
+  
+  
+  "/books/buy/{id}":
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Book
+      description: Create a transaction for buying a book
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: string
+                  example: 1
+              required: 
+                - quantity
+                 
+      responses: 
+        "201":
+          description: Successfully created
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 201
+                  message:
+                    type: string
+                    example: Book purchase successful, and a new transaction has been created
+                  data:
+                    $ref: "#/components/schemas/TransactionforPurchase"   
+                  links:
+                    type: object 
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/transaction/1"
+
+
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401" 
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"   
+        "500":
+          $ref: "#/components/responses/500"               
+
+
+  "/books/borrow/{id}":
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Book
+      description: Create a transaction for borrowing a book
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: string
+                  example: 1
+              required: 
+                - quantity
+      responses: 
+        "201":
+          description: Successfully created
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 201
+                  message:
+                    type: string
+                    example: Book borrow successful, and a new transaction has been created
+                  data:
+                    $ref: "#/components/schemas/Transaction"   
+                  links:
+                    type: object 
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/transaction/1"
+
+
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401" 
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"   
+        "500":
+          $ref: "#/components/responses/500"               
+
+
+
+
+
+
+
+
+  "/users":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      description: Retrive all users
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/sortTypeParam"
+        - $ref: "#/components/parameters/sortByParam"
+        - $ref: "#/components/parameters/searchParam"
+      responses:
+        "200":
+          description: Successfully retrieved
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code: 
+                    type: integer
+                    format: int32 
+                    example: 200 
+                  message: 
+                    type: string 
+                    example: Users retrieved successfully
+                  data: 
+                    type: array 
+                    items:
+                      $ref: "#/components/schemas/User"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users?page=2&limit=10"
+                      next:
+                        type: string
+                        format: url
+                        example: "/users?page=3&limit=10"
+                      prev:
+                        type: string
+                        format: url
+                        example: "/users?page=1&limit=10"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "500":
+          $ref: "#/components/responses/500" 
+     
+             
+  "/users/{id}":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      description: Retrive a single user
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "200":
+          description: Successfully retrived 
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: integer 
+                    format: int32 
+                    example: 200
+                  message: 
+                    type: string 
+                    example: User retrieved successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+                  links:
+                    type: object 
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users/1"
+
+        "401":
+          $ref: "#/components/responses/401" 
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"  
+
+                
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      description: Update a single user
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Anik
+                contactNumber:
+                  type: string
+                  example: 212-456-7890
+                address:
+                  type: string
+                  example: 123 Main St, New York, NY 10001
+                profilePicture:
+                  type: string
+                  format: url
+                  example: "https://s3.amazon.com/cover.jpg"   
+                
+      responses:
+        "200":
+          description: Successfully updated 
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: integer 
+                    format: int32 
+                    example: 200
+                  message: 
+                    type: string 
+                    example: User updated successfully
+                  data:
+                    $ref: "#/components/schemas/User"
+                  links:
+                    type: object 
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users/1"
+
+        "400":
+          $ref: "#/components/responses/400" 
+        "401":
+          $ref: "#/components/responses/401" 
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"                   
+                        
+                         
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      description: Delete a User by Id
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "204":
+          description: User Deleted Successfully
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"         
+                      
+                           
+                            
+                             
+
+
+
+
+  "/transactions": 
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      description: Retrive all transactions
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/sortTypeParam"
+        - $ref: "#/components/parameters/sortByParam"
+        - $ref: "#/components/parameters/searchParam"
+        - $ref: "#/components/parameters/userIdParam"
+        - $ref: "#/components/parameters/bookIdParam"
+      responses:
+        "200":
+          description: Successfully retrieved
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code: 
+                    type: integer
+                    format: int32 
+                    example: 200 
+                  message: 
+                    type: string 
+                    example: Transactions retrieved successfully 
+                  data:
+                    type: array 
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/transactions?page=2&limit=10"
+                      next:
+                        type: string
+                        format: url
+                        example: "/transactions?page=3&limit=10"
+                      prev:
+                        type: string
+                        format: url
+                        example: "/transactions?page=1&limit=10"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "500":
+          $ref: "#/components/responses/500" 
+     
+ 
+              
+  "/transactions/{id}":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      description: Retrive a single transaction
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "200":
+          description: Successfully retrived 
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: integer 
+                    format: int32 
+                    example: 200
+                  message: 
+                    type: string 
+                    example: Transaction retrieved successfully
+                  data:
+                    $ref: "#/components/schemas/Transaction"
+                  links:
+                    type: object 
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/transactions/1"
+
+        "401":
+          $ref: "#/components/responses/401" 
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"  
+
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      description: Delete a Transaction by Id
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+      responses:
+        "204":
+          description: Transaction Deleted Successfully
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"         
+                      
+
+            
+              
+              
+            
+              
+              
+            
+              
+              
+components:
+  schemas:
+    Book:
+      allOf:
+        - type: object
+          properties:
+            id: 
+              type: integer
+              format: int32
+              example: 1
+            title:
+              type: string
+              example: title
+            cover:
+              type: string
+              format: url
+              example: "https://s3.amazon.com/cover.jpg"
+            author: 
+              type: string 
+              example: Alexa
+            isbn:
+              type: string 
+              example: 978-0451450524
+            publicationDate: 
+              type: string 
+              example: 10 September 2023
+            category:
+              type: string 
+              example: "Fiction"
+            description: 
+              type: string 
+              example: "This is a sample book description."
+            price: 
+              type: number
+              example: 19.99
+            quantity:
+              type: number
+              example: 10
+            condition: 
+              type: string 
+              example: "New" 
+            availability:
+              type: boolean 
+              example: true
+          required: [id, title, cover, author, isbn, publicationDate, category, description, price, quantity, condition]                 
+        - $ref: "#/components/schemas/Timestamp"
+    
+    
+    User:
+      allOf:
+        - type: object 
+          properties: 
+            id:
+              type: integer
+              format: int32
+              example: 1
+            username:
+              type: string
+              example: anik2002
+            name:
+              type: string
+              example: Anik
+            email:
+              type: string
+              format: email
+              example: anik@gmail.com
+            contactNumber:
+              type: string
+              example: 212-456-7890
+            address:
+              type: string
+              example: 123 Main St, New York, NY 10001
+            role:
+              type: string 
+              example: admin
+            status: 
+              type: string 
+              example: approved
+            profilePicture: 
+              type: string
+              format: url
+              example: "https://s3.amazon.com/cover.jpg"
+          required: [id, username, name, email, contactNumber, address]
+        - $ref: "#/components/schemas/Timestamp" 
+                  
+                  
+    UserRequestBody:
+      type: object
+      properties:
+        username:
+          type: string
+          example: anik2002
+        name:
+           type: string
+           example: Anik
+        email:
+          type: string
+          format: email
+          example: anik@gmail.com
+        password:
+          type: string
+          format: password
+          example: hello#q859*&
+        contactNumber:
+          type: string
+          example: 212-456-7890
+        address:
+          type: string
+          example: 123 Main St, New York, NY 10001
+      required: [ username,name, email, password, contactNumber, address]        
+                
+                  
+    Transaction:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+              example: 1 
+            bookId:
+              type: integer
+              format: int32
+              example: 3456
+            userId: 
+              type: integer
+              format: int32
+              example: 106
+            action:
+              type: string 
+              example: "borrow" 
+            transactionDate:
+              type: string
+              format: date-time 
+              example: "2023-09-11T10:00:00Z"
+            returnDate: 
+              type: string
+              format: date-time 
+              example: "2023-09-20T10:00:00Z"
+            bookPrice:
+              type: number
+              example: 5
+            quantity:
+              type: number
+              example: 2
+            totalCost:
+              type: number 
+              example: 10
+          required: [ id, bookId, userId, action, bookPrice, quantity, totalCost]
+        - $ref: "#/components/schemas/Timestamp"      
+                  
+                
+    TransactionforPurchase:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+              example: 1 
+            bookId:
+              type: integer
+              format: int32
+              example: 3456
+            userId: 
+              type: integer
+              format: int32
+              example: 106
+            action:
+              type: string 
+              example: "purchase" 
+            transactionDate:
+              type: string
+              format: date-time 
+              example: "2023-09-11T10:00:00Z"
+            bookPrice:
+              type: number
+              example: 25
+            quantity:
+              type: integer
+              example: 2
+            totalCost:
+              type: number 
+              example: 50
+          required: [ id, bookId, userId, action, bookPrice, quantity, totalCost]
+        - $ref: "#/components/schemas/Timestamp"                  
+                  
+                  
+    Timestamp:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [createdAt, updatedAt]
+    
+
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+        name:
+          type: string
+          example: anik
+      required: [id, name]
+
+
+    BookDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+        name:
+          type: string
+          example: The Ultimate Tesla Coil Design 
+      required: [id, name]
+
+
+
+
+
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          example: 2
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        next:
+          type: integer
+          format: int32
+          example: 3
+        prev:
+          type: integer
+          format: int32
+          example: 1
+        totalPage:
+          type: integer
+          format: int32
+          example: 5
+        totalItems:
+          type: integer
+          format: int32
+          example: 50
+      required: [page, limit, totalPage, totalItems]
+  
+  
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+
+  parameters:
+    pageParam:
+      in: query
+      name: page
+      description: current page number
+      schema:
+        type: integer
+        format: int32
+        example: 1
+    limitParam:
+      in: query
+      name: limit
+      description: maximum item to be returned
+      schema:
+        type: integer
+        format: int32
+        example: 10
+    sortTypeParam:
+      in: query
+      name: sort_type
+      description: Type of sort (asc or dsc)
+      schema:
+        type: string
+        enum: [asc, dsc]
+        example: dsc
+    sortByParam:
+      in: query
+      name: sort_by
+      description: Sort key
+      schema:
+        type: string
+        example: updatedAt
+    searchParam:
+      in: query
+      name: search
+      description: Search term
+      schema:
+        type: string
+        example: ""
+    userIdParam:
+      in: query
+      name: user_id
+      description: UserId inside the transaction
+      schema: 
+        type: string
+        example: "" 
+    bookIdParam:
+      in: query
+      name: book_id
+      description: BookId inside the transaction
+      schema: 
+        type: string
+        example: ""
+    
+
+    idPathParam:
+      in: path
+      name: id
+      required: true
+      description: Unique Id
+      schema:
+        type: string
+        example: "64d0d312d28f10a8b95aaad1"
+
+  responses:
+    "400":
+      description: Bad Request
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 400
+              error:
+                type: string
+                example: Bad Request
+              message:
+                type: string
+                example: Invalid credentials 
+                
+    "401":
+      description: Unauthorized
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 401
+              error:
+                type: string
+                example: Unauthorized
+              message:
+                type: string
+                example: Authentication required
+    
+    "403":
+      description: Access denied
+      content:
+        "applicaton/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 403
+              error:
+                type: string
+                example: Forbidden
+              message:
+                type: string
+                example: Access denied
+
+    "404":
+      description: Resource Not Found
+      content:
+        "applicaton/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 404
+              error:
+                type: string
+                example: Not Found
+              message:
+                type: string
+                example: Requested resource not found
+    "500":
+      description: Internal Server Error
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 500
+              error:
+                type: string
+                example: Internal Server Error
+              message:
+                type: string
+                example: Server error. Please try again later.
