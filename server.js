@@ -6,7 +6,7 @@ const { dbConnect } = require("./db");
 // Create server
 const server = http.createServer(app);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 // DataBase connect and server listen
 const start = async () => {
